@@ -140,7 +140,7 @@ inline bool checkbox(const char* label, bool* v, bool header = false, bool* pare
 
 
             ImU32 track_off = IM_COL32(20, 20, 25, 255);
-            ImU32 track_on = IM_COL32(255, 20, 147, (int)(60 + 80 * extra_a));
+            ImU32 track_on = IM_COL32(138, 0, 255, (int)(60 + 80 * extra_a));
             ImU32 track_col = IM_COL32(
                 (int)(20 + (255-20) * extra_a * 0.25f),
                 (int)(20 + (20-20) * extra_a),
@@ -150,7 +150,7 @@ inline bool checkbox(const char* label, bool* v, bool header = false, bool* pare
 
 
             if (extra_a > 0.01f) {
-                ImU32 fill = IM_COL32(255, 20, 147, (int)(50 * extra_a));
+                ImU32 fill = IM_COL32(138, 0, 255, (int)(50 * extra_a));
                 window->DrawList->AddRectFilled(sw_pos, ImVec2(sw_pos.x + sw_w, sw_pos.y + sw_h), fill, sw_r);
             }
 
@@ -1684,7 +1684,7 @@ inline bool selectable_(const char* owner, const char* label, bool last, bool se
 
         if (extra_a > 0.01f) {
 
-            ImU32 sel_left = IM_COL32(255, 20, 147, (int)(180 * extra_b));
+            ImU32 sel_left = IM_COL32(138, 0, 255, (int)(180 * extra_b));
             ImU32 sel_right = IM_COL32(199, 21, 133, (int)(120 * extra_b));
             int vs = window->DrawList->VtxBuffer.Size;
             window->DrawList->AddRectFilled(bb.Min, bb.Max, IM_COL32_WHITE, last ? 4.f : 0, last ? ImDrawFlags_RoundCornersBottom : ImDrawFlags_None);
@@ -1864,7 +1864,7 @@ inline bool neon_button(const char* label, const ImVec2& size_arg = ImVec2(0, 0)
             dl->AddRect(
                 bb.Min - ImVec2(expand, expand),
                 bb.Max + ImVec2(expand, expand),
-                IM_COL32(255, 20, 147, alpha),
+                IM_COL32(138, 0, 255, alpha),
                 rounding + expand, 0, 1.0f);
         }
     }
@@ -1879,7 +1879,7 @@ inline bool neon_button(const char* label, const ImVec2& size_arg = ImVec2(0, 0)
 
     float borderAlpha = 0.3f + anim * 0.5f + pressAnim * 0.2f;
     dl->AddRect(bb.Min, bb.Max,
-        IM_COL32(255, 20, 147, (int)(borderAlpha * 255)), rounding, 0, 1.2f + anim * 0.3f);
+        IM_COL32(138, 0, 255, (int)(borderAlpha * 255)), rounding, 0, 1.2f + anim * 0.3f);
 
 
     if (anim > 0.01f) {
@@ -1897,10 +1897,10 @@ inline bool neon_button(const char* label, const ImVec2& size_arg = ImVec2(0, 0)
         ImVec2 brMin = ImVec2(bb.Min.x + 4, bb.Max.y - 2.5f);
         ImVec2 brMax = ImVec2(bb.Max.x - 4, bb.Max.y - 0.5f);
         dl->AddRectFilledMultiColor(brMin, brMax,
-            IM_COL32(255, 20, 147, 0),
-            IM_COL32(255, 20, 147, 0),
-            IM_COL32(255, 20, 147, (int)(25 * anim)),
-            IM_COL32(255, 20, 147, (int)(25 * anim)));
+            IM_COL32(138, 0, 255, 0),
+            IM_COL32(138, 0, 255, 0),
+            IM_COL32(138, 0, 255, (int)(25 * anim)),
+            IM_COL32(138, 0, 255, (int)(25 * anim)));
     }
 
 
@@ -1908,7 +1908,7 @@ inline bool neon_button(const char* label, const ImVec2& size_arg = ImVec2(0, 0)
         dl->AddRectFilled(
             ImVec2(bb.Min.x + 1, bb.Min.y + 4),
             ImVec2(bb.Min.x + 2.5f, bb.Max.y - 4),
-            IM_COL32(255, 20, 147, (int)(120 * anim)), 1.0f);
+            IM_COL32(138, 0, 255, (int)(120 * anim)), 1.0f);
     }
 
 

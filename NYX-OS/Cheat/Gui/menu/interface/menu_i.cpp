@@ -1,4 +1,4 @@
-﻿#define NOMINMAX
+#define NOMINMAX
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -864,7 +864,7 @@ public:
             draw->AddRectFilled(Clip_pos, Clip_pos + ImVec2(preview_width, preview_height), bgCol, 16.f);
 
 
-            ImU32 borderCol = IM_COL32(255, 20, 147, (int)(80 * switch_screen_a->val));
+            ImU32 borderCol = IM_COL32(138, 0, 255, (int)(80 * switch_screen_a->val));
             draw->AddRect(Clip_pos, Clip_pos + ImVec2(preview_width, preview_height), borderCol, 16.f, 0, 1.5f);
         }
 
@@ -986,26 +986,55 @@ public:
 
         auto bgDraw = ::GetBackgroundDrawList();
 
-
         begin("General");
         {
             background();
             bar();
 
+            // ��erik alan� � sidebar sa��nda
+            float sidebar_w  = 140.f;
+            float content_x  = sidebar_w + 8.f;
+            float content_w  = 860.f - sidebar_w - 16.f;
+            float content_h  = 578.f - 16.f;
 
             auto& active_tab = MGR->tabs.at(screen);
-            float top_bar_height = active_tab.has_subs() ? 92.f : 51.f;
 
-            ImGui::SetCursorPos(ImVec2(10.f, top_bar_height));
-            ::BeginChild("##t", ImVec2(730.f, 578.f - top_bar_height - 5.f), 0, ImGuiWindowFlags_NoBackground);
+            // Sub-tab bar (varsa) i�erik �st�ne
+            float sub_bar_h = 0.f;
+            if (active_tab.has_subs()) {
+                sub_bar_h = 34.f;
+                auto draw = ::GetWindowDrawList();
+                const auto& p = ::GetWindowPos() + ImVec2(1.f, 1.f);
+
+                int sub_count = (int)active_tab.sub_tabs.size();
+                float sub_w   = (content_w - 4.f * (sub_count - 1)) / sub_count;
+                sub_w = (std::min)(sub_w, 140.f);
+
+                ImVec2 sub_pos = p + ImVec2(content_x, 8.f);
+                for (int j = 0; j < sub_count; j++) {
+                    auto& sub = active_tab.sub_tabs[j];
+                    if (sub_tab(sub_pos, sub.label, sub.icon.c_str(),
+                                active_tab.active_sub == j, sub_w)) {
+                        if (active_tab.active_sub != j) {
+                            datax.clear();
+                            for (auto& [key, val] : anim::item_animations)
+                                val.val = 0.f;
+                        }
+                        active_tab.active_sub = j;
+                    }
+                    sub_pos.x += sub_w + 4.f;
+                }
+            }
+
+            ImGui::SetCursorPos(ImVec2(content_x, sub_bar_h + 8.f));
+            ::BeginChild("##content", ImVec2(content_w, content_h - sub_bar_h - 8.f),
+                         0, ImGuiWindowFlags_NoBackground);
             {
                 ImGui::SetCursorPos(ImGui::GetCursorPos() + ImVec2(0.f, 4.f));
-
                 if (active_tab.has_subs()) {
                     int sub_idx = active_tab.active_sub;
-                    if (sub_idx >= 0 && sub_idx < (int)active_tab.sub_tabs.size()) {
+                    if (sub_idx >= 0 && sub_idx < (int)active_tab.sub_tabs.size())
                         active_tab.sub_tabs[sub_idx].callback();
-                    }
                 } else {
                     active_tab.callback();
                 }
@@ -1014,17 +1043,26 @@ public:
 
             esp_preview();
         }
-
     }
     bool begin(const char* name) override
     {
-
-
-
-        ::SetNextWindowSize(ImVec2(750.f, 578.f));
+        // Sabit boyut: sol sidebar 140px + i�erik 610px = 750px geni�lik
+        ::SetNextWindowSize(ImVec2(860.f, 578.f));
         ImVec2 displaySize = ::GetIO().DisplaySize;
-        ::SetNextWindowPos(ImVec2((displaySize.x - 750.f) * 0.5f, (displaySize.y - 578.f) * 0.5f), ImGuiCond_Once);
-        bool ret = ::Begin(name, nullptr, ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoBackground);
+        ::SetNextWindowPos(
+            ImVec2((displaySize.x - 750.f) * 0.5f, (displaySize.y - 578.f) * 0.5f),
+            ImGuiCond_Once);
+
+        // NoMove kald�r�ld� � pencere s�r�klenebilir
+        bool ret = ::Begin(name, nullptr,
+            ImGuiWindowFlags_NoScrollWithMouse |
+            ImGuiWindowFlags_NoScrollbar       |
+            ImGuiWindowFlags_NoResize          |
+            ImGuiWindowFlags_NoDecoration      |
+            ImGuiWindowFlags_NoCollapse        |
+            ImGuiWindowFlags_NoTitleBar        |
+            ImGuiWindowFlags_NoBringToFrontOnFocus |
+            ImGuiWindowFlags_NoBackground);
         return ret;
     }
     void background() override
@@ -1033,19 +1071,36 @@ public:
         const auto& p = ::GetWindowPos() + ImVec2(1.f, 1.f);
         const ImVec2& region = ::GetContentRegionMax() - ImVec2(2.f, 2.f);
 
+        // Ana arka plan � koyu mor
+        draw->AddRectFilled(
+            ImVec2(p.x, p.y),
+            ImVec2(p.x + region.x, p.y + region.y),
+            IM_COL32(8, 8, 14, 245), 14.f);
 
-        ImU32 glass_bg = IM_COL32(0, 0, 0, 180);
-        draw->AddRectFilled(ImVec2(p.x, p.y), ImVec2(p.x + region.x, p.y + region.y), glass_bg, 16.f);
+        // Sol sidebar arka plan�
+        float sidebar_w = 140.f;
+        draw->AddRectFilled(
+            ImVec2(p.x, p.y),
+            ImVec2(p.x + sidebar_w, p.y + region.y),
+            IM_COL32(5, 5, 10, 200), 14.f);
 
+        // Sidebar sa� kenar �izgisi
+        draw->AddLine(
+            ImVec2(p.x + sidebar_w, p.y + 8.f),
+            ImVec2(p.x + sidebar_w, p.y + region.y - 8.f),
+            IM_COL32(138, 0, 255, 40), 1.f);
 
-        ImU32 glass_border = IM_COL32(255, 105, 180, 60);
-        draw->AddRect(ImVec2(p.x, p.y), ImVec2(p.x + region.x, p.y + region.y), glass_border, 16.f, 0, 1.5f);
+        // D�� �er�eve � mor
+        draw->AddRect(
+            ImVec2(p.x, p.y),
+            ImVec2(p.x + region.x, p.y + region.y),
+            IM_COL32(138, 0, 255, 60), 14.f, 0, 1.5f);
     }
 
 
     void draw_tab_icon(ImDrawList* draw, ImVec2 center, float size, const std::string& label, float alpha, bool is_sub = false)
     {
-        ImU32 col = IM_COL32(255, 20, 147, (int)(alpha));
+        ImU32 col = IM_COL32(138, 0, 255, (int)(alpha));
         ImU32 col2 = IM_COL32(255, 255, 255, (int)(alpha));
         float r = size * 0.5f;
 
@@ -1251,96 +1306,88 @@ public:
         const auto& p = ::GetWindowPos() + ImVec2(1.f, 1.f);
         const ImVec2& region = ::GetContentRegionMax() - ImVec2(2.f, 2.f);
 
+        float sidebar_w  = 140.f;
+        float logo_h     = 36.f;
+        float logo_pad   = 12.f;
+        float tab_h      = 36.f;
+        float tab_gap    = 4.f;
+        float tab_pad_x  = 8.f;
 
-        float bar_height = 50.f;
+        // �� Logo ����������������������������������������������
+        ImVec2 logo_pos = p + ImVec2((sidebar_w - logo_h) * 0.5f, logo_pad);
+        if (tex::transparent_logo)
+            draw->AddImage(ImTextureID(tex::transparent_logo),
+                logo_pos, logo_pos + ImVec2(logo_h, logo_h));
 
+        // NYX OS yaz�s� logo alt�nda
+        const char* brand = globals::brand::name;
+        ImVec2 brand_sz = f::sbold16->CalcTextSizeA(13.f, FLT_MAX, -1.f, brand, 0, NULL);
+        ImVec2 brand_pos = p + ImVec2((sidebar_w - brand_sz.x) * 0.5f,
+                                       logo_pad + logo_h + 4.f);
+        draw->AddText(f::sbold16, 13.f, brand_pos,
+                      IM_COL32(138, 0, 255, 200), brand);
 
-        float logo_height = 40.f;
-        float logo_aspect = 1.f;
-        float logo_width = logo_height * logo_aspect;
-        ImVec2 logo_pos = p + ImVec2(12.f, (bar_height - logo_height) / 2.f);
+        // Ay�r�c� �izgi
+        float sep_y = logo_pad + logo_h + 22.f;
+        draw->AddLine(ImVec2(p.x + 10.f, p.y + sep_y),
+                      ImVec2(p.x + sidebar_w - 10.f, p.y + sep_y),
+                      IM_COL32(138, 0, 255, 40), 1.f);
 
-        if (tex::transparent_logo != nullptr) {
-            draw->AddImage(ImTextureID(tex::transparent_logo), logo_pos, logo_pos + ImVec2(logo_width, logo_height));
-        }
-
+        // �� Sidebar Tab'lar� ����������������������������������
+        float tab_start_y = sep_y + 10.f;
         int tab_count = (int)MGR->tabs.size();
-        float logo_end_x = logo_width + 28.f;
-        float available_width = region.x - logo_end_x - 10.f;
-        float tab_spacing = 4.f;
-        float total_spacing = tab_spacing * (tab_count - 1);
-        float tab_width = (available_width - total_spacing) / (float)tab_count;
-        tab_width = (std::min)(tab_width, 115.f);
-
-
-        float total_tabs_width = tab_width * tab_count + total_spacing;
-        float tabs_start_x = logo_end_x + (available_width - total_tabs_width) / 2.f;
-
-        ImVec2 tab_pos = p + ImVec2(tabs_start_x, (bar_height - 32.f) / 2.f);
 
         for (int i = 0; i < tab_count; i++)
         {
             auto& element = MGR->tabs.at(i);
-            if (tab(tab_pos, element.label, element.icon.c_str(), screen == i, tab_width)) {
-                if (screen != i) {
+            bool active = (screen == i);
 
+            ImVec2 tpos = p + ImVec2(tab_pad_x,
+                                      tab_start_y + i * (tab_h + tab_gap));
+            ImVec2 tsize = ImVec2(sidebar_w - tab_pad_x * 2.f, tab_h);
+
+            // Animasyon
+            auto curr = anim::animation(
+                (element.label + "##stab").c_str(), anim_t(clamp_out, 0.2f));
+            curr->active = active;
+
+            bool hovered = ImGui::IsMouseHoveringRect(tpos, tpos + tsize);
+            float hv = active ? 1.f : (hovered ? 0.5f : 0.f);
+
+            // Arka plan
+            if (active || hovered)
+                draw->AddRectFilled(tpos, tpos + tsize,
+                    IM_COL32(138, 0, 255, active ? 30 : 15), 6.f);
+
+            // Sol kenar vurgu (aktif tab)
+            if (active)
+                draw->AddRectFilled(tpos, tpos + ImVec2(3.f, tab_h),
+                    IM_COL32(138, 0, 255, 255), 2.f);
+
+            // �kon
+            ImVec2 icon_center = tpos + ImVec2(14.f, tab_h * 0.5f);
+            float  icon_alpha  = active ? 255.f : (150.f + 80.f * hv);
+            draw_tab_icon(draw, icon_center, 13.f, element.label, icon_alpha);
+
+            // Yaz�
+            ImVec2 text_pos = tpos + ImVec2(28.f, (tab_h - 15.f) * 0.5f);
+            ImU32  text_col = IM_COL32(255, 255, 255, active ? 230 : (int)(140 + 90 * hv));
+            draw->AddText(f::sbold16, 15.f, text_pos, text_col, element.label.c_str());
+
+            // T�klama
+            ::GetCurrentWindow()->DC.CursorPos = tpos;
+            if (::InvisibleButton((element.label + "##stab").c_str(), tsize)) {
+                if (screen != i) {
                     datax.clear();
-                    for (auto& [key, val] : anim::item_animations) {
-                        val.val = 0.0f;
-                    }
+                    for (auto& [key, val] : anim::item_animations)
+                        val.val = 0.f;
                 }
                 screen = i;
             }
-            tab_pos.x += tab_width + tab_spacing;
-        }
-
-
-        draw->AddRectFilled(ImVec2(p.x, p.y + bar_height), ImVec2(p.x + region.x, p.y + bar_height + 1.f), c::white4);
-
-
-        auto& active_tab = MGR->tabs.at(screen);
-        if (active_tab.has_subs()) {
-            float sub_bar_y = bar_height + 1.f;
-            float sub_bar_height = 40.f;
-
-
-            draw->AddRectFilled(
-                ImVec2(p.x, p.y + sub_bar_y),
-                ImVec2(p.x + region.x, p.y + sub_bar_y + sub_bar_height),
-                IM_COL32(0, 0, 0, 100));
-
-            int sub_count = (int)active_tab.sub_tabs.size();
-            float sub_spacing = 6.f;
-            float sub_total_spacing = sub_spacing * (sub_count - 1);
-            float sub_tab_width = (region.x - 40.f - sub_total_spacing) / (float)sub_count;
-            sub_tab_width = (std::min)(sub_tab_width, 200.f);
-
-            float sub_total_width = sub_tab_width * sub_count + sub_total_spacing;
-            float sub_start_x = (region.x - sub_total_width) / 2.f;
-
-            ImVec2 sub_pos = p + ImVec2(sub_start_x, sub_bar_y + (sub_bar_height - 28.f) / 2.f);
-
-            for (int j = 0; j < sub_count; j++) {
-                auto& sub = active_tab.sub_tabs[j];
-                if (sub_tab(sub_pos, sub.label, sub.icon.c_str(), active_tab.active_sub == j, sub_tab_width)) {
-                    if (MGR->tabs.at(screen).active_sub != j) {
-                        datax.clear();
-                        for (auto& [key, val] : anim::item_animations) {
-                            val.val = 0.0f;
-                        }
-                    }
-                    MGR->tabs.at(screen).active_sub = j;
-                }
-                sub_pos.x += sub_tab_width + sub_spacing;
-            }
-
-
-            draw->AddRectFilled(
-                ImVec2(p.x, p.y + sub_bar_y + sub_bar_height),
-                ImVec2(p.x + region.x, p.y + sub_bar_y + sub_bar_height + 1.f),
-                c::white4);
         }
     }
+
+
     void end() override
     {
         auto draw = ::GetWindowDrawList();
@@ -1377,7 +1424,7 @@ public:
 
             draw->AddRect(render_pos, render_pos + size, ImColor(255, 255, 255, 100), 16.f, 0, 1.5f);
 
-            std::string icon_text = "✓";
+            std::string icon_text = "?";
             ImColor prim = c::primary;
             ImColor sec = c::secondary;
             c::highlight_t highlight = c::highlight;
@@ -1387,10 +1434,10 @@ public:
                 icon_text = "i"; prim = c::info_primary; sec = c::info_secondary; highlight.f = c::info_highlight.f; highlight.s = c::info_highlight.s;
                 break;
             case 1:
-                icon_text = "✓"; prim = c::primary; sec = c::secondary; highlight.f = c::highlight.f; highlight.s = c::highlight.s;
+                icon_text = "?"; prim = c::primary; sec = c::secondary; highlight.f = c::highlight.f; highlight.s = c::highlight.s;
                 break;
             case 2:
-                icon_text = "✗"; prim = c::error_primary; sec = c::error_secondary; highlight.f = c::error_highlight.f; highlight.s = c::error_highlight.s;
+                icon_text = "?"; prim = c::error_primary; sec = c::error_secondary; highlight.f = c::error_highlight.f; highlight.s = c::error_highlight.s;
                 break;
             default:
                 break;
