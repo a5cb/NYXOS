@@ -33,7 +33,7 @@ struct OverlayStruct {
 } Overlay;
 
 
-#include "../../Libraries/imgui/include/ImGui/TransparentLogo.hpp"
+#include "../Gui/menu/bytes/nyx_logo.h"
 
 
 void ShowWelcomeScreen() {
@@ -48,8 +48,8 @@ void ShowWelcomeScreen() {
     UINT loadedHeight = 0;
     HRESULT hr = CreateShaderResourceViewFromMemory(
         Overlay.pDevice,
-        TransparentLogo,
-        sizeof(TransparentLogo),
+        nyx_logo_png,
+        nyx_logo_png_size,
         &logoTexture,
         &loadedWidth,
         &loadedHeight

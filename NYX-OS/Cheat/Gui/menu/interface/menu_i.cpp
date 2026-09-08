@@ -24,11 +24,9 @@
 #include "../bytes/medium.h"
 #include "../bytes/semibold.h"
 #include "../bytes/caviar.h"
-#include "../bytes/logo.h"
+#include "../bytes/nyx_logo.h"
+#include "../bytes/nyx_logo_transparent.h"
 #include "../bytes/icon.h"
-#include "../bytes/shakepriv_logo.h"
-#include "../bytes/tap_logo.h"
-#include "../../../../Libraries/imgui/include/ImGui/TransparentLogo.hpp"
 #include "../../EspPreview.hpp"
 #include "../../../../Libraries/silent_esp_texture.h"
 #include "../../../Cheat/Brand.hpp"
@@ -659,13 +657,12 @@ public:
         if (tex::sidebar_bg == nullptr)
             CreateShaderResourceViewFromMemory(g_pd3dDevice, sidebar, sizeof(sidebar), &tex::sidebar_bg);
         if (tex::main_logo == nullptr)
-            CreateShaderResourceViewFromMemory(g_pd3dDevice, logo, sizeof(logo), &tex::main_logo);
+            CreateShaderResourceViewFromMemory(g_pd3dDevice, nyx_logo_png, nyx_logo_png_size, &tex::main_logo);
         if (tex::esp == nullptr)
             CreateShaderResourceViewFromMemory(g_pd3dDevice, esp, sizeof(esp), &tex::esp);
         if (tex::transparent_logo == nullptr)
-            CreateShaderResourceViewFromMemory(g_pd3dDevice, TransparentLogo, sizeof(TransparentLogo), &tex::transparent_logo);
-        if (tex::tap_logo == nullptr)
-            CreateShaderResourceViewFromMemory(g_pd3dDevice, tap_logo_png, sizeof(tap_logo_png), &tex::tap_logo);
+            CreateShaderResourceViewFromMemory(g_pd3dDevice, nyx_logo_transparent_png, nyx_logo_transparent_png_size, &tex::transparent_logo);
+        // tap_logo artık kullanılmıyor
         if (tex::silent_esp_preview == nullptr)
             CreateShaderResourceViewFromMemory(g_pd3dDevice, silent_esp, sizeof(silent_esp), &tex::silent_esp_preview);
 
@@ -1307,8 +1304,8 @@ public:
         const ImVec2& region = ::GetContentRegionMax() - ImVec2(2.f, 2.f);
 
         float sidebar_w  = 140.f;
-        float logo_h     = 36.f;
-        float logo_pad   = 12.f;
+        float logo_h     = 50.f;
+        float logo_pad   = 10.f;
         float tab_h      = 36.f;
         float tab_gap    = 4.f;
         float tab_pad_x  = 8.f;
